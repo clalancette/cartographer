@@ -30,7 +30,7 @@
 
   <url>https://github.com/googlecartographer/cartographer</url>
 
-  <buildtool_depend>catkin</buildtool_depend>
+  <buildtool_depend>ament_cmake</buildtool_depend>
 
   <build_depend>g++-static</build_depend>
   <build_depend>google-mock</build_depend>
@@ -47,6 +47,6 @@
   <depend>protobuf-dev</depend>
 
   <export>
-    <build_type>cmake</build_type>
+    <build_type>ament_cmake</build_type>
   </export>
 </package>
