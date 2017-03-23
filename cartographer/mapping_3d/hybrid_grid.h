@@ -17,6 +17,7 @@
 #ifndef CARTOGRAPHER_MAPPING_3D_HYBRID_GRID_H_
 #define CARTOGRAPHER_MAPPING_3D_HYBRID_GRID_H_
 
+#include <array>
 #include <cmath>
 #include <limits>
 #include <utility>
@@ -27,6 +28,8 @@
 #include "cartographer/common/math.h"
 #include "cartographer/common/port.h"
 #include "cartographer/mapping/probability_values.h"
+#include "cartographer/mapping_3d/proto/hybrid_grid.pb.h"
+#include "cartographer/transform/transform.h"
 #include "glog/logging.h"
 
 namespace cartographer {
@@ -468,6 +471,20 @@ class HybridGrid : public HybridGridBase<uint16> {
   HybridGrid(const float resolution, const Eigen::Vector3f& origin)
       : HybridGridBase<uint16>(resolution, origin) {}
 
+  HybridGrid(const proto::HybridGrid& proto)
+      : HybridGrid(proto.resolution(), transform::ToEigen(proto.origin())) {
+    CHECK_EQ(proto.values_size(), proto.x_indices_size());
+    CHECK_EQ(proto.values_size(), proto.y_indices_size());
+    CHECK_EQ(proto.values_size(), proto.z_indices_size());
+
+    for (int i = 0; i < proto.values_size(); ++i) {
+      // SetProbability does some error checking for us.
+      SetProbability(Eigen::Vector3i(proto.x_indices(i), proto.y_indices(i),
+                                     proto.z_indices(i)),
+                     mapping::ValueToProbability(proto.values(i)));
+    }
+  }
+
   // Sets the probability of the cell at 'index' to the given 'probability'.
   void SetProbability(const Eigen::Array3i& index, const float probability) {
     *mutable_value(index) = mapping::ProbabilityToValue(probability);
@@ -514,6 +531,19 @@ class HybridGrid : public HybridGridBase<uint16> {
   // Markers at changed cells.
   std::vector<ValueType*> update_indices_;
 };
+
+inline proto::HybridGrid ToProto(const HybridGrid& grid) {
+  proto::HybridGrid result;
+  result.set_resolution(grid.resolution());
+  *result.mutable_origin() = transform::ToProto(grid.origin());
+  for (const auto it : grid) {
+    result.add_x_indices(it.first.x());
+    result.add_y_indices(it.first.y());
+    result.add_z_indices(it.first.z());
+    result.add_values(it.second);
+  }
+  return result;
+}
 
 }  // namespace mapping_3d
 }  // namespace cartographer
