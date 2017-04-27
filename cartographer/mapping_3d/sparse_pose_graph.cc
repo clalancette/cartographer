@@ -83,7 +83,7 @@ void SparsePoseGraph::GrowSubmapTransformsAsNeeded(
   }
 }
 
-int SparsePoseGraph::AddScan(
+void SparsePoseGraph::AddScan(
     common::Time time, const sensor::RangeData& range_data_in_tracking,
     const transform::Rigid3d& pose,
     const kalman_filter::PoseCovariance& covariance, const Submaps* submaps,
@@ -126,7 +126,11 @@ int SparsePoseGraph::AddScan(
     ComputeConstraintsForScan(j, matching_submap, insertion_submaps,
                               finished_submap, pose, covariance);
   });
-  return j;
+}
+
+int SparsePoseGraph::GetNextTrajectoryNodeIndex() {
+  common::MutexLocker locker(&mutex_);
+  return trajectory_nodes_.size();
 }
 
 void SparsePoseGraph::AddWorkItem(std::function<void()> work_item) {
@@ -384,6 +388,21 @@ SparsePoseGraph::GetScanMatchingProgress() {
 std::vector<mapping::TrajectoryNode> SparsePoseGraph::GetTrajectoryNodes() {
   common::MutexLocker locker(&mutex_);
   return trajectory_nodes_;
+}
+
+std::vector<mapping::SparsePoseGraph::SubmapState>
+SparsePoseGraph::GetSubmapStates() {
+  std::vector<mapping::SparsePoseGraph::SubmapState> result;
+  common::MutexLocker locker(&mutex_);
+  for (const auto& submap_state : submap_states_) {
+    mapping::SparsePoseGraph::SubmapState entry;
+    entry.submap = submap_state.submap;
+    entry.scan_indices = submap_state.scan_indices;
+    entry.finished = submap_state.finished;
+    entry.trajectory = submap_state.trajectory;
+    result.push_back(entry);
+  }
+  return result;
 }
 
 std::vector<SparsePoseGraph::Constraint> SparsePoseGraph::constraints() {
