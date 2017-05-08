@@ -24,7 +24,7 @@ set(CARTOGRAPHER_SOVERSION ${CARTOGRAPHER_MAJOR_VERSION}.${CARTOGRAPHER_MINOR_VE
 
 include("${PROJECT_SOURCE_DIR}/cmake/functions.cmake")
 google_initialize_cartographer_project()
-google_enable_testing()
+#google_enable_testing()
 
 find_package(Boost REQUIRED COMPONENTS iostreams)
 find_package(Ceres REQUIRED COMPONENTS SparseLinearAlgebraLibrary)
@@ -134,9 +134,9 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 
 # TODO(damonkohler): Create a testing library.
-target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE
-  "${GMOCK_INCLUDE_DIRS}")
-target_link_libraries(${PROJECT_NAME} PUBLIC ${GMOCK_LIBRARY})
+#target_include_directories(${PROJECT_NAME} SYSTEM PRIVATE
+#  "${GMOCK_INCLUDE_DIRS}")
+#target_link_libraries(${PROJECT_NAME} PUBLIC ${GMOCK_LIBRARY})
 
 set(TARGET_COMPILE_FLAGS "${TARGET_COMPILE_FLAGS} ${GOOG_CXX_FLAGS}")
 set_target_properties(${PROJECT_NAME} PROPERTIES
